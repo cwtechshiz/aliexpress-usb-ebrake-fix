@@ -3,8 +3,10 @@
 A Linux workaround for cheap USB sim-racing e-brake levers that show up as:
 
 ```
-Bus 003 Device 006: ID 1eaf:0024 Leaflabs Maple
+1eaf:0024 Leaflabs Maple
 ```
+
+/pics/ have been uploaded to help others visually identify device.
 
 On Windows these work as an analog slider that also fires a digital button
 at full pull. On Linux (confirmed on CachyOS/KDE), only the button comes
@@ -12,7 +14,7 @@ through — no analog input at all, at any point in the pull range.
 
 ## Root cause
 
-The device is actually built around a **WCH CH551G** microcontroller (an
+The device is actually built around a **WCH CH549G** microcontroller (an
 8051-core USB MCU), not a real LeafLabs Maple — the firmware just reuses
 LeafLabs' USB vendor/product ID, likely copied from an old example
 project. Confirmed via the chip markings and `usbhid-dump`.
@@ -53,21 +55,12 @@ is plugged in, and a second udev rule tags the virtual device as a
 joystick so it also shows up in desktop tools like KDE's
 Settings → Game Controller panel.
 
-## The "real" fix
-
-The CH551G has a factory USB bootloader and can be reflashed on Linux
-with open tools like [`isp55e0`](https://github.com/frank-zago/isp55e0)
-or `chprog`. Giving the second Slider field its own distinct usage code
-(e.g. `Dial` or `Wheel` instead of a duplicate `Slider`) would fix this
-natively on every OS, no workaround needed. That's a project for another
-day — this repo is the no-reflash stopgap in the meantime.
-
 ## Install
 
 Requires `hid-tools` (for `hid-recorder`) and Python 3 with `pip`.
 
 ```bash
-git clone <this-repo-url>
+git clone cwtechshiz/aliexpress-usb-ebrake-fix
 cd aliexpress-usb-ebrake-fix
 sudo ./install.sh
 ```
@@ -116,18 +109,4 @@ sudo systemctl daemon-reload
 sudo udevadm control --reload-rules
 ```
 
-## Reporting upstream
 
-If you hit this on a different device with the same symptom (analog axis
-works on Windows, only a button shows on Linux), it's worth reporting to
-the kernel HID maintainers — this is a general `hid-input.c` bug (silently
-dropping a report field when two fields share a usage code), not specific
-to this one board. Useful evidence to include:
-
-- `sudo usbhid-dump -d <vid>:<pid> -e descriptor`
-- a `hid-recorder` capture while operating the control through its full
-  range
-- `evtest` output showing the axis is missing despite the above
-
-File at [bugzilla.kernel.org](https://bugzilla.kernel.org) (Drivers → HID)
-or email `linux-input@vger.kernel.org`.
