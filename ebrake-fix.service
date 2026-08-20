@@ -1,0 +1,6 @@
+[Unit]
+Description=E-brake analog axis fix (aliexpress-usb-ebrake-fix)
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/bin/ebrakefix.py
+Restart=on-failure

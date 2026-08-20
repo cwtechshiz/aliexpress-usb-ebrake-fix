@@ -1,0 +1,1 @@
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1eaf", ATTR{idProduct}=="0024", TAG+="systemd", ENV{SYSTEMD_WANTS}="ebrake-fix.service"
